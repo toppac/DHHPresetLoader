@@ -151,6 +151,6 @@ namespace DHHPresetLoader
             GUILayout.EndHorizontal();
         }
 
-        private string _floatmat = "{0:F}";
+        private const string _floatmat = "{0:F}";
     }
 }

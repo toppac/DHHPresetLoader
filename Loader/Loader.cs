@@ -23,11 +23,20 @@ namespace DHHPresetLoader
         public const string Guid = "com.toppac.DHHPresetLoader";
         public const string Version = "0.0.0.3";
         public const string Name = "DHH Preset Loader";
+        
+        //DHH Preset (*.dhs)|*.dhs|All files|*.*
+        public const string Filter = "DHHPreset(*.dhs)|*.dhs";
+        public const string DefPresetName = "GraphicSetting.dhs";
+        public const string DefExtName = "dhs";
+
         public static DHHPresetLoader Instance;
         private static Harmony _HarmonyIns;
         internal object dhhRuntimeScript { get; set; }
         internal Action<string> LoadPreset;
         internal Action<string> SavePreset;
+
+        private Rect _viewRect = new Rect(0, 0, 260, 480);
+        private Vector2 _viewPos;
 
         internal void InitMethod()
         {
@@ -112,8 +121,18 @@ namespace DHHPresetLoader
         {
             // Gui Rect pos report.
             //var golbalSkin = GUI.skin;
-
-            _viewRect = GUILayout.Window(114514, _viewRect, DrawPanelItem, Name);
+            const int WIN_ID = 114514;
+            var rect = _viewRect;
+            if (_miniLoader)
+            {
+                rect.height = 52;
+                _viewRect = GUILayout.Window(WIN_ID, rect, MiniLoader, Name);
+            }
+            else
+            {
+                rect.height = 460;
+                _viewRect = GUILayout.Window(WIN_ID, rect, DrawPanelItem, Name);
+            }
 
             if (_viewRect.Contains(new Vector2(Input.mousePosition.x,
                     Screen.height - Input.mousePosition.y)))
@@ -121,16 +140,33 @@ namespace DHHPresetLoader
             //GUI.skin = golbalSkin;
         }
 
+        private void MiniLoader(int id)
+        {
+            GUILayout.BeginVertical(GUILayout.Height(20));
+            {
+                if (GUILayout.Button("> ▼ <", GUILayout.ExpandWidth(true)))
+                    _miniLoader = false;
+            }
+            GUILayout.EndVertical();
+            GUI.DragWindow();
+        }
+
         private void DrawPanelItem(int id)
         {
             GUILayout.BeginVertical();
             {
+                if (GUILayout.Button("> ▲ <", GUILayout.ExpandWidth(true),
+                    GUILayout.ExpandHeight(false)))
+                {
+                    _miniLoader = true;
+                    goto Aa;
+                }
+
                 // Top Div
                 DrawDirTreeView();
 
                 // Buttom Div
-                GUILayout.BeginVertical(
-                    GUI.skin.box, GUILayout.ExpandWidth(true),
+                GUILayout.BeginVertical(GUI.skin.box, GUILayout.ExpandWidth(true),
                     GUILayout.ExpandHeight(false));
                 {
                     if (GUILayout.Button("Refresh Loader"))
@@ -150,6 +186,7 @@ namespace DHHPresetLoader
                 }
                 GUILayout.EndVertical();
             }
+            Aa:
             GUILayout.EndVertical();
             GUI.DragWindow();
         }
@@ -413,14 +450,7 @@ namespace DHHPresetLoader
             _searchKey = string.Empty;
         }
 
-        //DHH Preset (*.dhs)|*.dhs|All files|*.*
-        public static readonly string Filter = "DHHPreset(*.dhs)|*.dhs";
-        public static readonly string DefPresetName = "GraphicSetting.dhs";
-        public const string DefExtName = "dhs";//.dhs
-
-        private Rect _viewRect = new Rect(0, 0, 260, 460);
-        private Vector2 _viewPos;
-
+        private bool _miniLoader = true;
         private bool _xuaChecked;
         private bool _isSearch;
 
@@ -435,7 +465,7 @@ namespace DHHPresetLoader
 
         private HashSet<string> _expDirs = new HashSet<string>();
         private List<FileItem> _fileItems;
-        
+
         public DirectoryTree DirTree
         {
             get
